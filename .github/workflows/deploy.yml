@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ main ] # или master, если твоя главная ветка называется так
+    branches: [ main ] # Если твоя ветка называется master, замени main на master
 
 permissions:
   contents: read
@@ -15,21 +15,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # Мы убрали строку cache: 'npm', чтобы не было ошибки lock-file
+
       - name: Install dependencies
         run: npm install
+
       - name: Build
         run: npm run build
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
+          # Папка dist — это куда Vite складывает готовый сайт
           path: './dist'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
