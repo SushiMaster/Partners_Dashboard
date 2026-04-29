@@ -514,37 +514,19 @@ const HARD_SALES_DATA = {
     'Туапсе-01': { 'Контекст': 4410, 'PUSH': 2268, 'Карточки ЯБ': 1000, 'SMM': 4500 }
     }
 };
-
-// 1. Сначала определяем функцию (объединяем ваши наработки в одну корректную)
-const generateDataFromReport = () => {
-  const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
-  
-  const data = {
-    monthlySummary: [], // Общие суммы по месяцам
-    details: []         // Все детальные записи в одном массиве для фильтрации
-  };
-
-  months.forEach(month => {
+months.forEach(month => {
     const reportForMonth = HARD_SALES_DATA[month] || {};
     const fotTotal = TARGET_FOT[month] || 0;
     const revTotal = TARGET_REVENUE[month] || 1;
 
-    let totalMonthRevenue = 0;
-    let totalMonthProfit = 0;
-
     PARTNER_DATA_RAW.forEach((partner, pIdx) => {
       const svcsForTT = reportForMonth[partner.tt] || {};
-      
       Object.keys(svcsForTT).forEach(svcName => {
         const revenue = svcsForTT[svcName];
         const fot = (revenue / revTotal) * fotTotal;
         const profit = revenue - fot;
 
-        totalMonthRevenue += revenue;
-        totalMonthProfit += profit;
-
-        // Добавляем в общий массив всех деталей
-        data.details.push({
+        data.push({
           id: `${pIdx}-${month}-${svcName}`,
           month,
           partner: partner.partner,
@@ -558,19 +540,12 @@ const generateDataFromReport = () => {
         });
       });
     });
-
-    // Добавляем итоги месяца
-    data.monthlySummary.push({
-      month,
-      totalRevenue: totalMonthRevenue,
-      totalProfit: totalMonthProfit
-    });
   });
 
   return data;
+
 };
 
-// 2. Вызываем функцию и записываем результат в MOCK_DB
 const MOCK_DB = generateDataFromReport();
 
 // --- КОМПОНЕНТЫ ИНТЕРФЕЙСА ---
