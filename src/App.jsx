@@ -387,7 +387,7 @@ const HARD_SALES_DATA = {
     'Курск-03': { 'Контекст': 7497, 'Яндекс Бизнес': 1000 },
     'Мытищи-01': { 'Контекст': 8820, 'Пуш рассылки': 1134, 'Яндекс Бизнес': 1000, 'SMM': 13125 },
     'Рыбинск-01': { 'Контекст': 17640, 'Пуш рассылки': 2268, 'Таргетинг': 15422, 'Яндекс Бизнес': 2000, 'SMM': 28000 },
-    'Tuapse-01': { 'Контекст': 8820, 'Пуш рассылки': 2268, 'Яндекс Бизнес': 2500, 'SMM': 16000 },
+    'Tуапсе-01': { 'Контекст': 8820, 'Пуш рассылки': 2268, 'Яндекс Бизнес': 2500, 'SMM': 16000 },
     'Балашиха-01': { 'Пуш рассылки': 1134, 'Яндекс Бизнес': 1000 },
     'Воронеж-03': { 'Пуш рассылки': 2268, 'Яндекс Бизнес': 2000 },
     'Дубна-01': { 'Пуш рассылки': 756, 'Таргетинг': 15422, 'Яндекс Бизнес': 1000, 'SMM': 14000 },
@@ -514,19 +514,35 @@ const HARD_SALES_DATA = {
     'Туапсе-01': { 'Контекст': 4410, 'PUSH': 2268, 'Карточки ЯБ': 1000, 'SMM': 4500 }
     }
 };
-months.forEach(month => {
+const generateDataFromReport = () => {
+  const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
+  
+  const results = {
+    monthlySummary: [],
+    details: []
+  };
+
+  months.forEach(month => {
     const reportForMonth = HARD_SALES_DATA[month] || {};
     const fotTotal = TARGET_FOT[month] || 0;
     const revTotal = TARGET_REVENUE[month] || 1;
 
+    let totalMonthRevenue = 0;
+    let totalMonthProfit = 0;
+
     PARTNER_DATA_RAW.forEach((partner, pIdx) => {
+      // Теперь просто берем данные по названию ТТ, так как ошибки в данных больше нет
       const svcsForTT = reportForMonth[partner.tt] || {};
+      
       Object.keys(svcsForTT).forEach(svcName => {
         const revenue = svcsForTT[svcName];
         const fot = (revenue / revTotal) * fotTotal;
         const profit = revenue - fot;
 
-        data.push({
+        totalMonthRevenue += revenue;
+        totalMonthProfit += profit;
+
+        results.details.push({
           id: `${pIdx}-${month}-${svcName}`,
           month,
           partner: partner.partner,
@@ -534,19 +550,27 @@ months.forEach(month => {
           owner: partner.owner,
           contact: partner.contact || 'Не закреплен',
           service: svcName,
-          revenue,
-          profit,
-          expenses: { fot }
+          revenue: revenue,
+          profit: profit,
+          expenses: { fot: fot }
         });
       });
     });
+
+    results.monthlySummary.push({
+      month,
+      totalRevenue: totalMonthRevenue,
+      totalProfit: totalMonthProfit
+    });
   });
 
-  return data;
-
+  return results;
 };
 
-const MOCK_DB = generateDataFromReport();
+// Создаем базу данных
+const MOCK_DB_FULL = generateDataFromReport();
+// Делаем MOCK_DB массивом для работы фильтров
+const MOCK_DB = MOCK_DB_FULL.details;
 
 // --- КОМПОНЕНТЫ ИНТЕРФЕЙСА ---
 
