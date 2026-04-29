@@ -515,34 +515,22 @@ const HARD_SALES_DATA = {
     }
 };
 const generateDataFromReport = () => {
-  const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
-  
-  const results = {
-    monthlySummary: [],
-    details: []
-  };
+  const data = [];
+  const months = ['2025-10', '2025-11', '2025-12', '2026-01','2026-02','2026-03'];
 
   months.forEach(month => {
     const reportForMonth = HARD_SALES_DATA[month] || {};
     const fotTotal = TARGET_FOT[month] || 0;
     const revTotal = TARGET_REVENUE[month] || 1;
 
-    let totalMonthRevenue = 0;
-    let totalMonthProfit = 0;
-
     PARTNER_DATA_RAW.forEach((partner, pIdx) => {
-      // Теперь просто берем данные по названию ТТ, так как ошибки в данных больше нет
       const svcsForTT = reportForMonth[partner.tt] || {};
-      
       Object.keys(svcsForTT).forEach(svcName => {
         const revenue = svcsForTT[svcName];
         const fot = (revenue / revTotal) * fotTotal;
         const profit = revenue - fot;
 
-        totalMonthRevenue += revenue;
-        totalMonthProfit += profit;
-
-        results.details.push({
+        data.push({
           id: `${pIdx}-${month}-${svcName}`,
           month,
           partner: partner.partner,
@@ -550,28 +538,17 @@ const generateDataFromReport = () => {
           owner: partner.owner,
           contact: partner.contact || 'Не закреплен',
           service: svcName,
-          revenue: revenue,
-          profit: profit,
-          expenses: { fot: fot }
+          revenue,
+          profit,
+          expenses: { fot }
         });
       });
     });
-
-    results.monthlySummary.push({
-      month,
-      totalRevenue: totalMonthRevenue,
-      totalProfit: totalMonthProfit
-    });
   });
-
-  return results;
+  return data;
 };
 
-// Создаем базу данных
-const MOCK_DB_FULL = generateDataFromReport();
-// Делаем MOCK_DB массивом для работы фильтров
-const MOCK_DB = MOCK_DB_FULL.details;
-
+const MOCK_DB = generateDataFromReport();
 // --- КОМПОНЕНТЫ ИНТЕРФЕЙСА ---
 
 const Card = ({ title, value, subValue, icon: Icon, colorClass }) => (
