@@ -515,14 +515,13 @@ const HARD_SALES_DATA = {
     }
 };
 
+// 1. Сначала определяем функцию (объединяем ваши наработки в одну корректную)
 const generateDataFromReport = () => {
-  const data = [];
   const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
-
-const processData = () => {
+  
   const data = {
-    monthlySummary: [], // Здесь будут общие суммы по месяцам
-    details: {}         // Здесь будет лежать детализация, разбитая по месяцам
+    monthlySummary: [], // Общие суммы по месяцам
+    details: []         // Все детальные записи в одном массиве для фильтрации
   };
 
   months.forEach(month => {
@@ -532,7 +531,6 @@ const processData = () => {
 
     let totalMonthRevenue = 0;
     let totalMonthProfit = 0;
-    const monthDetails = [];
 
     PARTNER_DATA_RAW.forEach((partner, pIdx) => {
       const svcsForTT = reportForMonth[partner.tt] || {};
@@ -542,12 +540,11 @@ const processData = () => {
         const fot = (revenue / revTotal) * fotTotal;
         const profit = revenue - fot;
 
-        // Накапливаем итоги месяца
         totalMonthRevenue += revenue;
         totalMonthProfit += profit;
 
-        // Сохраняем детальную запись
-        monthDetails.push({
+        // Добавляем в общий массив всех деталей
+        data.details.push({
           id: `${pIdx}-${month}-${svcName}`,
           month,
           partner: partner.partner,
@@ -562,27 +559,18 @@ const processData = () => {
       });
     });
 
-    // Добавляем общую информацию по месяцу в сводку
+    // Добавляем итоги месяца
     data.monthlySummary.push({
       month,
       totalRevenue: totalMonthRevenue,
-      totalProfit: totalMonthProfit,
-      detailsCount: monthDetails.length
+      totalProfit: totalMonthProfit
     });
-
-    // Сохраняем детализацию этого месяца в отдельный ключ для быстрого доступа по клику
-    data.details[month] = monthDetails;
   });
 
   return data;
 };
 
-// ПРИМЕР ИСПОЛЬЗОВАНИЯ:
-const result = processData();
-
-// 1. Сначала выводите список из result.monthlySummary (кнопки или строки таблицы)
-// 2. По клику на месяц (например, '2026-03') берете данные из result.details['2026-03']
-
+// 2. Вызываем функцию и записываем результат в MOCK_DB
 const MOCK_DB = generateDataFromReport();
 
 // --- КОМПОНЕНТЫ ИНТЕРФЕЙСА ---
