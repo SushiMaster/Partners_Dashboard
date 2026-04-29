@@ -1,0 +1,705 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LabelList
+} from 'recharts';
+import { 
+  LayoutDashboard, 
+  Table2, 
+  PieChart, 
+  Filter, 
+  Calendar, 
+  Building2, 
+  Users, 
+  ChevronDown, 
+  ChevronRight,
+  DollarSign, 
+  TrendingUp, 
+  Store, 
+  Target,
+  CheckCircle2,
+  XCircle,
+  LayoutGrid,
+  List as ListIcon,
+  MapPin,
+  User
+} from 'lucide-react';
+
+// --- КОНФИГУРАЦИЯ И ДАННЫЕ ---
+
+const SERVICES = [
+  'SMM', 'Интернет-маркетинг', 'Дизайн', 'Пуш рассылки', 'Контекст', 
+  'Рассылки', 'Таргетинг', 'Репутация', 'Отдел сопровождения', 
+  'Яндекс Бизнес', 'Агрегаторы', 'Маркетолог', 'Прочие'
+];
+
+const MONTH_NAMES = {
+  '2026-01': 'Январь 2026',
+  '2025-12': 'Декабрь 2025',
+  '2025-11': 'Ноябрь 2025',
+  '2025-10': 'Октябрь 2025'
+};
+
+const TARGET_REVENUE = {
+  '2025-10': 1190058.00,
+  '2025-11': 1049256.93,
+  '2025-12': 1438675.00,
+  '2026-01': 1188202.00
+};
+
+const TARGET_FOT = {
+  '2025-10': 942709.00,
+  '2025-11': 992059.00,
+  '2025-12': 892734.00,
+  '2026-01': 807291.00
+};
+
+const PARTNER_DATA_RAW = [
+  { owner: "ИП Давлатова Н.Ш.", tt: "Серпухов-01", contact: "Максим Габбасов", partner: "Акобиров Амирхон" },
+  { owner: "Акобиров А.Н. ИП", tt: "Заокский-01", contact: "Акобиров Амирхон", partner: "Акобиров Амирхон" },
+  { owner: "ООО Ш. Голд", tt: "Москва-12", contact: "Малахова Мадина", partner: "Малахова Мадина" },
+  { owner: "ИП Малахова", tt: "Москва-16", contact: "Малахова Мадина", partner: "Малахова Мадина" },
+  { owner: "Востриков А.О. ИП", tt: "Зеленоград-01", contact: "Востриков Александр", partner: "Востриков Александр" },
+  { owner: "Богдасарова Д.А. ИП", tt: "Санкт-Петербург-05", contact: "Востриков Александр", partner: "Востриков Александр" },
+  { owner: "Рудакова Е.В. ИП", tt: "Красногорск-01", contact: "Востриков Александр", partner: "Востриков Александр" },
+  { owner: "Сенченко М.В. ИП/ИП Глушков А.В.", tt: "Видное-01", contact: "Востриков Александр", partner: "Востриков Александр" },
+  { owner: "Богдасарова Д.А. ИП", tt: "Подольск-01", contact: "Востриков Александр", partner: "Востриков Александр" },
+  { owner: "Гурш К.О. ИП", tt: "Балашиха-01", contact: "Востриков Александр", partner: "Востриков Александр" },
+  { owner: "ИП Сухарев", tt: "Москва-13", contact: "Максим Габбасов", partner: "Губанов Максим" },
+  { owner: "Кусля К.Г. ИП", tt: "Братск-01", contact: "Михаил Братск", partner: "Кусля Константин" },
+  { owner: "Кусля К.Г. ИП", tt: "Братск-02", contact: "Михаил Братск", partner: "Кусля Константин" },
+  { owner: "Кусля К.Г. ИП", tt: "Братск-04", contact: "Михаил Братск", partner: "Кусля Константин" },
+  { owner: "АКЦЕПТ-ТРЕЙД ООО", tt: "Москва-01", contact: "Ольга Акцепт Трейд", partner: "Дворкин Илья" },
+  { owner: "АКЦЕПТ-ТРЕЙД ООО", tt: "Реутов-01", contact: "Ольга Акцепт Трейд", partner: "Дворкин Илья" },
+  { owner: "Дудкин А.В. ИП", tt: "Мытищи-01", contact: "Дудкин Александр", partner: "Дудкин Александр" },
+  { owner: "Белышева К.В. ИП/ИП Полякова", tt: "Королев-01", contact: "Дудкин Александр", partner: "Дудкин Александр" },
+  { owner: "Мещеряков Р.А. ИП", tt: "Ангарск-01", contact: "Мещеряков Роман", partner: "Мещеряков Роман" },
+  { owner: "ИП Мещерякова", tt: "Усолье-Сибирское-01", contact: "Мещеряков Роман", partner: "Мещеряков Роман" },
+  { owner: "Мельникова Т.О. ИП", tt: "Туапсе-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Анапа-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Жуковский-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Качканар-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Чебаркуль-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Геленджик-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Витязево-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Коломна-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Нижняя Тура-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Череповец-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Воскресенск-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Егорьевск-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "Шабалина Е.П. ИП", tt: "Дубна-01", contact: "Максим Габбасов", partner: "Мельникова Татьяна" },
+  { owner: "ИП Башкатова С.", tt: "Воронеж-03", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Башкатова О.", tt: "Воронеж-04", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Башкатова О.", tt: "Воронеж-07", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Выговская", tt: "Курск-02", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Выговская", tt: "Курск-03", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Криль", tt: "Белгород-01", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Пирогов", tt: "Белгород-02", contact: "Ефремова Виктория", partner: "Паталахов Павел" },
+  { owner: "ИП Сатыбалдиев", tt: "Смоленск-01", contact: "Ефремова Виктория", partner: "Сатыбалдиев Сулейман" },
+  { owner: "ИП Свинухова", tt: "Москва-18", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "ИП Свинухов Р.А", tt: "Москва-04", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "ООО ГЕФЕСТ", tt: "Москва-07", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "ИП Свинухова Е.", tt: "Москва-09", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "ООО ГЕФЕСТ", tt: "Москва-10", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "ИП Великотский", tt: "Реутов-02", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "ИП Чеков", tt: "Чехов-01", contact: "Ефремова Виктория", partner: "Великотский Максим" },
+  { owner: "Гайманова М.Н. ИП/ИП Шатилова А.В.", tt: "Новороссийск-01", contact: "Кулаков Дмитрий", partner: "Кулаков Дмитрий" },
+  { owner: "Черкасов ИП/ИП Грачева", tt: "Новороссийск-02", contact: "Кулаков Дмитрий", partner: "Кулаков Дмитрий" },
+  { owner: "ИП Никифоров", tt: "Калининград-01", contact: "Максим Габбасов", partner: "Бычков Вячеслав" },
+  { owner: "ИП Бычкова", tt: "Калининград-02", contact: "Максим Габбасов", partner: "Бычков Вячеслав" },
+  { owner: "Ворошилов И.В. ИП", tt: "Кстово-01", contact: "Ворошилов Иван", partner: "Ворошилов Иван" },
+  { owner: "Сыромятников ИП", tt: "Долгопрудный-01", contact: "Максим Габбасов", partner: "Сыромятников Дмитрий" },
+  { owner: "Сыромятникова Г.В. ИП", tt: "Лобня-01", contact: "Максим Габбасов", partner: "Сыромятников Дмитрий" },
+  { owner: "Кельт Н.С. ИП", tt: "Рыбинск-01", contact: "Максим Габбасов", partner: "Кельт Игорь" },
+  { owner: "Пушкарева В. М. ИП", tt: "Рыбинск-02", contact: "Максим Габбасов", partner: "Кельт Игорь" },
+  { owner: "Кривка ИП", tt: "Одинцово-01", contact: "Максим Габбасов", partner: "Момотов Геннадий" },
+  { owner: "ИП Момотов/ИП Гладкова Н.М.", tt: "Одинцово-02", contact: "Максим Габбасов", partner: "Момотов Геннадий" },
+  { owner: "ИП Момотов", tt: "Химки-01", contact: "Максим Габбасов", partner: "Момотов Геннадий" },
+  { owner: "Старцева Н.В. ИП", tt: "Талнах-01", contact: "Старцева Наталья", partner: "Старцева Наталья" },
+  { owner: "Церпицкая Е.С. ИП", tt: "Москва-11", contact: "Максим Габбасов", partner: "Капур Джатиндер" },
+  { owner: "Церпицкая Е.С. ИП", tt: "Москва-14", contact: "Максим Габбасов", partner: "Капур Джатиндер" },
+  { owner: "Церпицкая Е.С. ИП", tt: "Москва-15", contact: "Максим Габбасов", partner: "Капур Джатиндер" },
+  { owner: "Валеева Ю.И. ИП", tt: "Федоровский-01", contact: "Валеева Юлия", partner: "Валеева Юлия" },
+  { owner: "Евдокимова Ирина", tt: "Санкт-Петербург-04", contact: "Евдокимова Ирина", partner: "Лукин Владимир" },
+  { owner: "Илюхин Н.М. ИП", tt: "Тарко-Сале-01", contact: "Илюхин Николай", partner: "Илюхин Николай" },
+  { owner: "Филатова М.А. ИП", tt: "Иркутск-03", contact: "Филатова Мария", partner: "Филатов Егор" },
+  { owner: "Прудников Я.А. ИП", tt: "Санкт-Петербург-06", contact: "Потапахина Людмила", partner: "Потапахина Людмила" },
+  { owner: "Коркина А.А. ИП", tt: "Санкт-Петербург-03", contact: "Потапахина Людмила", partner: "Потапахина Людмила" },
+  { owner: "Прудников Я.А. ИП", tt: "Санкт-Петербург-09", contact: "Потапахина Людмила", partner: "Потапахина Людмила" },
+  { owner: "Блинов Р.В. ИП", tt: "Киров-01", contact: "Блинов Роман", partner: "Блинов Роман" },
+  { owner: "ИП Бочкова", tt: "Островцы-01", contact: "Князева Лариса", partner: "Князева Лариса" },
+  { owner: "Валеева Ю.И. ИП", tt: "Лянтор-01", contact: "Валеева Юлия", partner: "Валеева Юлия" }
+];
+
+const RAW_MONTHLY_REPORT = {
+    '2025-10': { 'Анапа-01': ['SMM 6470', 'Интернет-маркетинг 3000', 'Дизайн ', 'Пуш рассылки', 'Контекст'], 'Ангарск-01': ['Рассылки', 'Таргетинг', 'Репутация', 'Контекст', 'Пуш рассылки', 'Интернет-маркетинг', 'SMM'], 'Балашиха-01': ['Пуш рассылки', 'Интернет-маркетинг', 'Рассылки', 'Отдел сопровождения'], 'Белгород-01': ['Контекст', 'Отдел сопровождения', 'Интернет-маркетинг', 'Дизайн'], 'Белгород-02': ['Интернет-маркетинг'], 'Братск-01': ['Таргетинг', 'SMM', 'Контекст', 'Пуш рассылки', 'Отдел сопровождения'], 'Видное-01': ['Контекст', 'Интернет-маркетинг', 'Рассылки', 'Пуш рассылки', 'Репутация'], 'Витязево-01': ['Интернет-маркетинг', 'Дизайн', 'Контекст', 'Пуш рассылки'], 'Воронеж-03': ['Интернет-маркетинг', 'Репутация', 'Отдел сопровождения'], 'Воронеж-04': ['Контекст', 'Дизайн', 'Репутация', 'Интернет-маркетинг', 'Отдел сопровождения'], 'Воронеж-07': ['Интернет-маркетинг'], 'Геленджик-01': ['Пуш рассылки', 'Контекст', 'Интернет-маркетинг', 'Дизайн', 'SMM'], 'Заокский-01': ['SMM', 'Таргетинг', 'Контекст', 'Интернет-маркетинг'], 'Зеленоград-01': ['Интернет-маркетинг', 'Рассылки', 'Отдел сопровождения', 'Пуш рассылки'], 'Калининград-01': ['Дизайн', 'Репутация'], 'Киров-01': ['Пуш рассылки', 'Интернет-маркетинг', 'Рассылки', 'Отдел сопровождения'], 'Королев-01': ['Рассылки', 'SMM', 'Контекст', 'Пуш рассылки', 'Дизайн', 'Прочие', 'Интернет-маркетинг', 'Отдел сопровождения'], 'Красногорск-01': ['Пуш рассылки', 'Интернет-маркетинг', 'Рассылки'], 'Курск-02': ['Дизайн', 'Отдел сопровождения', 'Интернет-маркетинг'], 'Курск-03': ['Контекст', 'Интернет-маркетинг'], 'Лобня-01': ['Дизайн', 'Пуш рассылки', 'SMM', 'Интернет-маркетинг', 'Отдел сопровождения'], 'Москва-04': ['Отдел сопровождения', 'Интернет-маркетинг', 'Рассылки', 'SMM'], 'Москва-07': ['Рассылки', 'SMM'], 'Москва-09': ['Интернет-маркетинг', 'Рассылки', 'SMM'], 'Москва-10': ['SMM', 'Рассылки'], 'Москва-11': ['Интернет-маркетинг', 'Дизайн', 'SMM', 'Пуш рассылки'], 'Москва-12': ['Контекст', 'SMM'], 'Москва-13': ['Интернет-маркетинг', 'SMM', 'Пуш рассылки', 'Дизайн'], 'Москва-14': ['Дизайн', 'Интернет-маркетинг', 'Пуш рассылки'], 'Москва-15': ['Дизайн', 'Пуш рассылки', 'Интернет-маркетинг'], 'Москва-16': ['Контекст', 'SMM', 'Агрегаторы'], 'Москва-18': ['SMM', 'Интернет-маркетинг'], 'Мытищи-01': ['Пуш рассылки', 'SMM', 'Контекст', 'Дизайн', 'Интернет-маркетинг', 'Рассылки', 'Прочие', 'Отдел сопровождения', 'Агрегаторы'], 'Новороссийск-01': ['Пуш рассылки', 'Контекст', 'Репутация', 'Маркетолог', 'SMM'], 'Одинцово-01': ['Пуш рассылки', 'SMM', 'Интернет-маркетинг', 'Дизайн', 'Отдел сопровождения'], 'Одинцово-02': ['Интернет-маркетинг', 'Дизайн', 'Пуш рассылки'], 'Рыбинск-01': ['Дизайн', 'Пуш рассылки', 'Контекст', 'SMM', 'Интернет-маркетинг'], 'Санкт-Петербург-03': ['Репутация', 'Интернет-маркетинг', 'Рассылки', 'Пуш рассылки', 'Отдел сопровождения'], 'Санкт-Петербург-04': ['Пуш рассылки', 'Отдел сопровождения', 'Рассылки'], 'Санкт-Петербург-05': ['Интернет-маркетинг', 'Пуш рассылки', 'Рассылки', 'Репутация', 'Отдел сопровождения'], 'Санкт-Петербург-06': ['Пуш рассылки', 'Интернет-маркетинг', 'Репутация', 'Отдел сопровождения'], 'Санкт-Петербург-09': ['Отдел сопровождения', 'Интернет-маркетинг'], 'Smolensk-01': ['Дизайн', 'Прочие', 'Интернет-маркетинг', 'Репутация', 'Отдел сопровождения', 'Рассылки', 'Контекст'], 'Талнах-01': ['Интернет-маркетинг', 'Таргетинг', 'SMM', 'Контекст', 'Маркетолог', 'Пуш рассылки'], 'Tuapse-01': ['Пуш рассылки', 'SMM', 'Контекст', 'Дизайн', 'Интернет-маркетинг'], 'Усолье-Сибирское-01': ['SMM', 'Дизайн', 'Таргетинг', 'Агрегаторы'], 'Химки-01': ['Дизайн', 'Пуш рассылки', 'SMM', 'Интернет-маркетинг', 'Отдел сопровождения'], 'Чебаркуль-01': ['Интернет-маркетинг', 'Таргетинг', 'Дизайн', 'SMM', 'Отдел сопровождения', 'Агрегаторы'], 'Чехов-01': ['Рассылки', 'Дизайн', 'Отдел сопровождения'] },
+    '2025-11': { 'Анапа-01': ['Пуш рассылки', 'SMM', 'Контекст', 'Репутация', 'Рассылки', 'Яндекс Бизнес', 'Дизайн'], 'Ангарск-01': ['Рассылки', 'Таргетинг', 'Контекст', 'Пуш рассылки', 'SMM', 'Отдел сопровождения', 'Яндекс Бизнес'], 'Балашиха-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Рассылки'], 'Белгород-01': ['Контекст', 'Яндекс Бизнес', 'Пуш рассылки'], 'Белгород-02': ['Яндекс Бизнес', 'Пуш рассылки'], 'Братск-01': ['Таргетинг', 'SMM', 'Контекст', 'Пуш рассылки', 'Дизайн', 'Рассылки'], 'Видное-01': ['Яндекс Бизнес', 'Рассылки', 'Пуш рассылки'], 'Витязево-01': ['Контекст', 'Пуш рассылки', 'Репутация', 'Рассылки', 'Яндекс Бизнес', 'Дизайн'], 'Воронеж-03': ['Яндекс Бизнес', 'Пуш рассылки'], 'Воронеж-04': ['Контекст', 'Яндекс Бизнес', 'Пуш рассылки'], 'Воронеж-07': ['Яндекс Бизнес', 'Пуш рассылки'], 'Геленджик-01': ['Пуш рассылки', 'Контекст', 'Рассылки', 'Яндекс Бизнес', 'Дизайн', 'SMM'], 'Дубна-01': ['Отдел сопровождения', 'Таргетинг', 'Агрегаторы'], 'Заокский-01': ['SMM', 'Таргетинг', 'Контекст', 'Яндекс Бизнес', 'Отдел сопровождения'], 'Зеленоград-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Рассылки'], 'Иркутск-03': ['Агрегаторы', 'Контекст', 'Отдел сопровождения', 'Пуш рассылки'], 'Калининград-01': ['Рассылки', 'Дизайн', 'Репутация'], 'Киров-01': ['Пуш рассылки', 'Контекст', 'Яндекс Бизнес', 'Рассылки'], 'Королев-01': ['Рассылки', 'SMM', 'Контекст', 'Пуш рассылки', 'Дизайн', 'Яндекс Бизнес'], 'Красногорск-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Рассылки'], 'Курск-02': ['Яндекс Бизнес', 'Пуш рассылки'], 'Курск-03': ['Контекст', 'Яндекс Бизнес', 'Пуш рассылки'], 'Лобня-01': ['Дизайн', 'Пуш рассылки', 'SMM', 'Отдел сопровождения', 'Яндекс Бизнес'], 'Москва-01': ['Рассылки', 'Яндекс Бизнес', 'Пуш рассылки'], 'Москва-04': ['Яндекс Бизнес', 'SMM', 'Агрегаторы', 'Рассылки', 'Пуш рассылки'], 'Москва-07': ['Контекст', 'Яндекс Бизнес', 'Агрегаторы', 'Рассылки', 'SMM', 'Пуш рассылки'], 'Москва-09': ['Агрегаторы', 'Яндекс Бизнес', 'Рассылки', 'SMM', 'Пуш рассылки'], 'Москва-10': ['Агрегаторы', 'SMM', 'Контекст', 'Яндекс Бизнес', 'Рассылки', 'Пуш рассылки'], 'Москва-11': ['Дизайн', 'SMM', 'Пуш рассылки', 'Яндекс Бизнес'], 'Москва-12': ['Контекст', 'SMM', 'Рассылки'], 'Москва-13': ['Яндекс Бизнес', 'SMM', 'Пуш рассылки', 'Репутация', 'Рассылки'], 'Москва-14': ['Яндекс Бизнес', 'Пуш рассылки'], 'Москва-15': ['Яндекс Бизнес', 'Пуш рассылки'], 'Москва-16': ['Контекст', 'Рассылки', 'SMM'], 'Москва-18': ['Дизайн', 'SMM', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес'], 'Мытищи-01': ['Дизайн', 'Пуш рассылки', 'SMM', 'Контекст', 'Яндекс Бизнес', 'Рассылки'], 'Новороссийск-01': ['Контекст', 'Пуш рассылки', 'Рассылки'], 'Одинцово-01': ['Пуш рассылки', 'SMM', 'Яндекс Бизнес', 'Дизайн'], 'Одинцово-02': ['Яндекс Бизнес', 'Дизайн', 'Пуш рассылки'], 'Реутов-01': ['Репутация', 'Рассылки', 'Яндекс Бизнес', 'Пуш рассылки'], 'Реутов-02': ['Пуш рассылки', 'Агрегаторы', 'Яндекс Бизнес', 'Рассылки'], 'Рыбинск-01': ['Пуш рассылки', 'Контекст', 'SMM', 'Таргетинг', 'Яндекс Бизнес', 'Дизайн', 'Агрегаторы'], 'Санкт-Петербург-03': ['Яндекс Бизнес', 'Рассылки'], 'Санкт-Петербург-05': ['Яндекс Бизнес', 'Пуш рассылки', 'Рассылки'], 'Smolensk-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Рассылки', 'Контекст'], 'Талнах-01': ['Яндекс Бизнес', 'Таргетинг', 'SMM', 'Контекст', 'Маркетолог', 'Пуш рассылки', 'Рассылки'], 'Tuapse-01': ['Пуш рассылки', 'SMM', 'Контекст', 'Дизайн', 'Отдел сопровождения', 'Рассылки', 'Яндекс Бизнес', 'Репутация'], 'Усолье-Сибирское-01': ['Отдел сопровождения', 'Рассылки', 'Яндекс Бизнес', 'Контекст', 'Пуш рассылки', 'SMM', 'Таргетинг'], 'Химки-01': ['Дизайн', 'Пуш рассылки', 'SMM', 'Рассылки', 'Репутация', 'Яндекс Бизнес'], 'Чебаркуль-01': ['Яндекс Бизнес', 'Дизайн', 'Таргетинг', 'SMM', 'Рассылки', 'Прочие', 'Пуш рассылки'] },
+    '2025-12': { 'Анапа-01': ['Яндекс Бизнес', 'Рассылки', 'Репутация', 'Дизайн', 'Пуш рассылки', 'SMM', 'Контекст'], 'Ангарск-01': ['Пуш рассылки', 'Рассылки', 'Таргетинг', 'Контекст', 'Отдел сопровождения', 'Яндекс Бизнес', 'Репутация', 'Дизайн', 'SMM'], 'Балашиха-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Рассылки'], 'Белгород-01': ['Контекст', 'Яндекс Бизнес', 'Пуш рассылки'], 'Белгород-02': ['Яндекс Бизнес'], 'Братск-01': ['Пуш рассылки', 'Таргетинг', 'SMM', 'Контекст', 'Рассылки', 'Дизайн'], 'Видное-01': ['Яндекс Бизнес', 'Пуш рассылки', 'Рассылки', 'Контекст', 'Дизайн'], 'Витязево-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Репутация', 'Контекст'], 'Воронеж-03': ['Пуш рассылки', 'Яндекс Бизнес', 'Агрегаторы'], 'Воронеж-04': ['Контекст', 'Яндекс Бизнес'], 'Воронеж-07': ['Яндекс Бизнес'], 'Геленджик-01': ['Пуш рассылки', 'Контекст', 'Яндекс Бизнес', 'Рассылки', 'Агрегаторы', 'SMM'], 'Заокский-01': ['Рассылки', 'SMM', 'Таргетинг', 'Контекст'], 'Зеленоград-01': ['Рассылки', 'Яндекс Бизнес', 'Пуш рассылки'], 'Иркутск-03': ['Пуш рассылки', 'Контекст'], 'Калининград-01': ['Яндекс Бизнес', 'SMM', 'Дизайн', 'Репутация', 'Отдел сопровождения', 'Таргетинг'], 'Киров-01': ['Пуш рассылки', 'Контекст', 'Рассылки', 'Яндекс Бизнес'], 'Королев-01': ['SMM', 'Контекст', 'Дизайн', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'Отдел сопровождения', 'Агрегаторы'], 'Красногорск-01': ['Пуш рассылки', 'Рассылки', 'Яндекс Бизнес'], 'Курск-02': ['Пуш рассылки', 'Яндекс Бизнес'], 'Курск-03': ['Контекст', 'Пуш рассылки', 'Яндекс Бизнес'], 'Лобня-01': ['Пуш рассылки', 'Дизайн', 'SMM', 'Яндекс Бизнес'], 'Москва-01': ['Рассылки', 'Яндекс Бизнес', 'Пуш рассылки'], 'Москва-04': ['Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'SMM', 'Дизайн'], 'Москва-07': ['Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'Дизайн', 'Контекст', 'SMM'], 'Москва-09': ['Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'Агрегаторы', 'SMM', 'Дизайн'], 'Москва-10': ['Агрегаторы', 'SMM', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'Дизайн', 'Контекст'], 'Москва-11': ['Яндекс Бизнес', 'Пуш рассылки', 'SMM'], 'Москва-12': ['Контекст', 'SMM', 'Рассылки', 'Яндекс Бизнес', 'Пуш рассылки', 'Репутация'], 'Москва-13': ['Яндекс Бизнес', 'SMM', 'Дизайн', 'Рассылки', 'Репутация', 'Пуш рассылки'], 'Москва-14': ['Пуш рассылки', 'Яндекс Бизнес'], 'Москва-15': ['Пуш рассылки', 'Яндекс Бизнес'], 'Москва-16': ['Контекст', 'SMM', 'Рассылки', 'Яндекс Бизнес', 'Репутация', 'Пуш рассылки'], 'Москва-18': ['Дизайн', 'SMM', 'Агрегаторы', 'Рассылки', 'Пуш рассылки', 'Яндекс Бизнес'], 'Мытищи-01': ['Дизайн', 'SMM', 'Контекст', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'Отдел сопровождения'], 'Новороссийск-01': ['Пуш рассылки', 'Рассылки', 'Репутация', 'Отдел сопровождения', 'Агрегаторы'], 'Одинцово-01': ['SMM', 'Пуш рассылки', 'Дизайн', 'Яндекс Бизнес'], 'Одинцово-02': ['Яндекс Бизнес', 'Пуш рассылки', 'Агрегаторы'], 'Реутов-01': ['Рассылки', 'Пуш рассылки', 'Яндекс Бизнес', 'Репутация'], 'Реутов-02': ['Агрегаторы', 'Рассылки', 'Пуш рассылки', 'Яндекс Бизнес', 'Дизайн'], 'Рыбинск-01': ['Контекст', 'SMM', 'Пуш рассылки', 'Таргетинг', 'Дизайн', 'Яндекс Бизнес'], 'Санкт-Петербург-03': ['Дизайн', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес'], 'Санкт-Петербург-04': ['Дизайн', 'Агрегаторы', 'Пуш рассылки', 'Рассылки'], 'Санкт-Петербург-05': ['Пуш рассылки', 'Яндекс Бизнес', 'Дизайн', 'Рассылки'], 'Санкт-Петербург-06': ['Дизайн', 'Пуш рассылки', 'Яндекс Бизнес'], 'Санкт-Петербург-09': ['Дизайн', 'Яндекс Бизнес', 'Пуш рассылки'], 'Smolensk-01': ['Яндекс Бизнес', 'Контекст', 'Рассылки', 'Пуш рассылки'], 'Талнах-01': ['Таргетинг', 'SMM', 'Контекст', 'Яндекс Бизнес', 'Пуш рассылки'], 'Tuapse-01': ['SMM', 'Контекст', 'Яндекс Бизнес', 'Репутация', 'Рассылки', 'Пуш рассылки', 'Агрегаторы'], 'Усолье-Сибирское-01': ['Отдел сопровождения', 'Контекст', 'SMM', 'Таргетинг', 'Репутация', 'Яндекс Бизнес', 'Агрегаторы', 'Дизайн', 'Пуш рассылки', 'Рассылки'], 'Химки-01': ['SMM', 'Пуш рассылки', 'Репутация', 'Яндекс Бизнес'], 'Чебаркуль-01': ['Дизайн', 'Таргетинг', 'SMM', 'Яндекс Бизнес', 'Пуш рассылки'], 'Чехов-01': ['Яндекс Бизнес', 'Дизайн', 'Пуш рассылки', 'Рассылки'] },
+    '2026-01': { 'Анапа-01': ['Яндекс Бизнес', 'SMM', 'Контекст', 'Пуш рассылки'], 'Ангарск-01': ['Контекст', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес', 'SMM'], 'Балашиха-01': ['Пуш рассылки', 'Яндекс Бизнес'], 'Белгород-01': ['Контекст', 'Яндекс Бизнес', 'Пуш рассылки'], 'Белгород-02': ['Яндекс Бизнес'], 'Братск-01': ['Контекст', 'SMM', 'Пуш рассылки', 'Таргетинг', 'Рассылки'], 'Видное-01': ['Яндекс Бизнес', 'Дизайн', 'Пуш рассылки', 'Контекст'], 'Витязево-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Контекст'], 'Воронеж-03': ['Пуш рассылки', 'Яндекс Бизнес'], 'Воронеж-04': ['Контекст', 'Яндекс Бизнес'], 'Воронеж-07': ['Яндекс Бизнес'], 'Геленджик-01': ['Пуш рассылки', 'Контекст', 'SMM', 'Яндекс Бизнес'], 'Заокский-01': ['Таргетинг', 'Рассылки', 'SMM', 'Контекст'], 'Зеленоград-01': ['Яндекс Бизнес', 'Пуш рассылки'], 'Иркутск-03': ['Контекст'], 'Калининград-01': ['Яндекс Бизнес', 'SMM', 'Таргетинг', 'Агрегаторы', 'Пуш рассылки'], 'Киров-01': ['Пуш рассылки', 'Контекст'], 'Королев-01': ['Пуш рассылки', 'Яндекс Бизнес', 'SMM', 'Контекст'], 'Красногорск-01': ['Пуш рассылки', 'Яндекс Бизнес'], 'Курск-02': ['Пуш рассылки', 'Яндекс Бизнес'], 'Курск-03': ['Контекст', 'Яндекс Бизнес'], 'Лобня-01': ['Пуш рассылки', 'SMM', 'Яндекс Бизнес'], 'Москва-01': ['Яндекс Бизнес'], 'Москва-04': ['Таргетинг', 'Рассылки', 'Пуш рассылки', 'Яндекс Бизнес', 'SMM'], 'Москва-07': ['Таргетинг', 'Рассылки', 'Пуш рассылки', 'Яндекс Бизнес', 'SMM', 'Контекст'], 'Москва-09': ['Таргетинг', 'Рассылки', 'Пуш рассылки', 'Яндекс Бизнес', 'SMM'], 'Москва-10': ['Таргетинг', 'SMM', 'Рассылки', 'Пуш рассылки', 'Яндекс Бизнес'], 'Москва-11': ['Таргетинг', 'Яндекс Бизнес', 'SMM'], 'Москва-12': ['Контекст', 'Рассылки', 'Яндекс Бизнес'], 'Москва-13': ['Таргетинг', 'Яндекс Бизнес', 'SMM'], 'Москва-14': ['Таргетинг', 'SMM', 'Яндекс Бизнес'], 'Москва-15': ['Таргетинг', 'SMM', 'Яндекс Бизнес'], 'Москва-16': ['Контекст', 'Рассылки', 'Яндекс Бизнес'], 'Москва-18': ['Таргетинг', 'SMM', 'Пуш рассылки', 'Рассылки', 'Яндекс Бизнес'], 'Мытищи-01': ['Пуш рассылки', 'Контекст', 'SMM', 'Яндекс Бизнес'], 'Новороссийск-01': ['Пуш рассылки', 'Рассылки'], 'Одинцово-01': ['Пуш рассылки', 'SMM', 'Яндекс Бизнес'], 'Одинцово-02': ['Яндекс Бизнес'], 'Реутов-01': ['Яндекс Бизнес'], 'Реутов-02': ['Контекст', 'Пуш рассылки', 'Яндекс Бизнес', 'Рассылки'], 'Рыбинск-01': ['Пуш рассылки', 'Контекст', 'SMM', 'Таргетинг', 'Яндекс Бизнес'], 'Рыбинск-02': ['Яндекс Бизнес'], 'Санкт-Петербург-03': ['Дизайн', 'Яндекс Бизнес'], 'Санкт-Петербург-04': ['Дизайн', 'Пуш рассылки'], 'Санкт-Петербург-05': ['Яндекс Бизнес', 'Дизайн'], 'Санкт-Петербург-06': ['Агрегаторы', 'Дизайн', 'Яндекс Бизнес'], 'Санкт-Петербург-09': ['Дизайн', 'Яндекс Бизнес'], 'Серпухов-01': ['Таргетинг', 'Дизайн', 'Контекст', 'SMM', 'Пуш рассылки', 'Рассылки'], 'Smolensk-01': ['Пуш рассылки', 'Яндекс Бизнес', 'Контекст', 'Рассылки'], 'Талнах-01': ['Яндекс Бизнес', 'Пуш рассылки', 'Контекст', 'Рассылки'], 'Tuapse-01': ['Яндекс Бизнес', 'Пуш рассылки', 'Контекст', 'SMM'], 'Усолье-Сибирское-01': ['Яндекс Бизнес', 'Пуш рассылки', 'Рассылки', 'SMM', 'Контекст'], 'Химки-01': ['Пуш рассылки', 'SMM', 'Яндекс Бизнес'], 'Чебаркуль-01': ['Таргетинг', 'Яндекс Бизнес', 'Дизайн', 'SMM', 'Пуш рассылки'], 'Чехов-01': ['Яндекс Бизнес', 'Пуш рассылки', 'Контекст', 'Рассылки'] }
+};
+
+const generateDataFromReport = () => {
+  const data = [];
+  const months = ['2025-10', '2025-11', '2025-12', '2026-01'];
+
+  months.forEach(month => {
+    const reportForMonth = RAW_MONTHLY_REPORT[month] || {};
+    let monthTotalBase = 0;
+    const tempItems = [];
+
+    PARTNER_DATA_RAW.forEach((partner, pIdx) => {
+      const svcsForTT = reportForMonth[partner.tt] || [];
+      svcsForTT.forEach(svcName => {
+        const weight = Math.floor(Math.random() * 20000) + 5000;
+        tempItems.push({
+          id: `${pIdx}-${month}-${svcName}`,
+          month,
+          partner: partner.partner,
+          tt: partner.tt,
+          owner: partner.owner,
+          contact: partner.contact || 'Не закреплен',
+          service: svcName,
+          weight
+        });
+        monthTotalBase += weight;
+      });
+    });
+
+    const revScale = TARGET_REVENUE[month] / (monthTotalBase || 1);
+    const fotTotal = TARGET_FOT[month];
+
+    tempItems.forEach(item => {
+      const revenue = item.weight * revScale;
+      const fot = (revenue / TARGET_REVENUE[month]) * fotTotal;
+      const profit = revenue - fot;
+
+      data.push({ ...item, revenue, profit, expenses: { fot } });
+    });
+  });
+  return data;
+};
+
+const MOCK_DB = generateDataFromReport();
+
+// --- КОМПОНЕНТЫ ИНТЕРФЕЙСА ---
+
+const Card = ({ title, value, subValue, icon: Icon, colorClass }) => (
+  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-start justify-between hover:shadow-md transition-shadow">
+    <div className="flex-1">
+      <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">{title}</p>
+      <h3 className="text-2xl font-black text-slate-800 tabular-nums">{value}</h3>
+      {subValue && <p className="text-slate-400 text-[10px] mt-1 font-medium">{subValue}</p>}
+    </div>
+    <div className={`p-3 rounded-lg flex-shrink-0 shadow-sm ${colorClass}`}>
+      <Icon size={20} className="text-white" />
+    </div>
+  </div>
+);
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [capacityViewMode, setCapacityViewMode] = useState('summary'); 
+  const [selectedContact, setSelectedContact] = useState('Все');
+  const [selectedOwner, setSelectedOwner] = useState('Все'); 
+  const [selectedMonth, setSelectedMonth] = useState('Все'); 
+  const [expandedServices, setExpandedServices] = useState({});
+  const [expandedContacts, setExpandedContacts] = useState({});
+  const [expandedOwners, setExpandedOwners] = useState({});
+
+  const uniqueContacts = useMemo(() => ['Все', ...new Set(PARTNER_DATA_RAW.map(d => d.contact || 'Не закреплен').sort())], []);
+  const uniqueOwners = useMemo(() => ['Все', ...new Set(PARTNER_DATA_RAW.map(d => d.owner).sort())], []);
+  const uniqueMonths = useMemo(() => ['Все', ...new Set(MOCK_DB.map(d => d.month).sort())], []);
+  
+  const uniqueTTList = useMemo(() => PARTNER_DATA_RAW.map(p => ({ tt: p.tt, owner: p.owner })), []);
+  const totalTTCount = uniqueTTList.length;
+
+  const filteredData = useMemo(() => {
+    return MOCK_DB.filter(item => {
+      const matchContact = selectedContact === 'Все' || item.contact === selectedContact;
+      const matchOwner = selectedOwner === 'Все' || item.owner === selectedOwner;
+      const matchDate = selectedMonth === 'Все' || item.month === selectedMonth;
+      return matchContact && matchOwner && matchDate;
+    });
+  }, [selectedContact, selectedOwner, selectedMonth]);
+
+  const registryHierarchy = useMemo(() => {
+    const hierarchy = {};
+    filteredData.forEach(item => {
+      const c = item.contact;
+      if (!hierarchy[c]) hierarchy[c] = { name: c, owners: {}, totalRev: 0 };
+      
+      const o = item.owner;
+      if (!hierarchy[c].owners[o]) hierarchy[c].owners[o] = { name: o, tts: {}, totalRev: 0 };
+      
+      const t = item.tt;
+      if (!hierarchy[c].owners[o].tts[t]) hierarchy[c].owners[o].tts[t] = { name: t, owner: item.owner, months: {}, rev: 0 };
+      
+      const m = item.month;
+      if (!hierarchy[c].owners[o].tts[t].months[m]) hierarchy[c].owners[o].tts[t].months[m] = { name: m, svcs: [], rev: 0 };
+      
+      hierarchy[c].owners[o].tts[t].months[m].svcs.push(item);
+      hierarchy[c].owners[o].tts[t].months[m].rev += item.revenue;
+      hierarchy[c].owners[o].tts[t].rev += item.revenue;
+      hierarchy[c].owners[o].totalRev += item.revenue;
+      hierarchy[c].totalRev += item.revenue;
+    });
+    return hierarchy;
+  }, [filteredData]);
+
+  const capacityStats = useMemo(() => {
+    const stats = {};
+    const monthsInScope = selectedMonth === 'Все' ? uniqueMonths.filter(m => m !== 'Все') : [selectedMonth];
+    
+    SERVICES.forEach(svc => {
+      stats[svc] = {
+        name: svc,
+        months: monthsInScope.map(month => {
+          const buyersTTSet = new Set(MOCK_DB.filter(d => d.month === month && d.service === svc).map(d => d.tt));
+          const activeTTs = uniqueTTList.filter(p => buyersTTSet.has(p.tt)).map(p => ({
+            name: `${p.tt} (${p.owner})`,
+            sum: MOCK_DB.filter(d => d.month === month && d.service === svc && d.tt === p.tt).reduce((s, i) => s + i.revenue, 0)
+          })).sort((a,b) => b.sum - a.sum);
+          const inactiveTTs = uniqueTTList.filter(p => !buyersTTSet.has(p.tt)).map(p => ({ name: `${p.tt} (${p.owner})` }));
+          const rev = MOCK_DB.filter(d => d.month === month && d.service === svc).reduce((s, i) => s + i.revenue, 0);
+          
+          return {
+            month, factCount: buyersTTSet.size, totalCount: totalTTCount, revenue: rev,
+            arpu: buyersTTSet.size > 0 ? rev / buyersTTSet.size : 0,
+            potentialCount: totalTTCount - buyersTTSet.size, penetration: (buyersTTSet.size / totalTTCount) * 100,
+            active: activeTTs, inactive: inactiveTTs
+          };
+        })
+      };
+      const mStats = stats[svc].months;
+      stats[svc].totalRev = mStats.reduce((s, m) => s + m.revenue, 0);
+      stats[svc].avgPenetration = mStats.reduce((s, m) => s + m.penetration, 0) / (mStats.length || 1);
+      stats[svc].avgFact = Math.round(mStats.reduce((s, m) => s + m.factCount, 0) / (mStats.length || 1));
+    });
+    return Object.values(stats).sort((a,b) => b.totalRev - a.totalRev);
+  }, [selectedMonth, uniqueMonths, uniqueTTList, totalTTCount]);
+
+  const totalKPI = useMemo(() => {
+    return filteredData.reduce((acc, item) => ({
+      revenue: acc.revenue + item.revenue, profit: acc.profit + item.profit, fot: acc.fot + (item.expenses?.fot || 0)
+    }), { revenue: 0, profit: 0, fot: 0 });
+  }, [filteredData]);
+
+  const chartHistoryData = useMemo(() => {
+     const months = uniqueMonths.filter(m => m !== 'Все').sort();
+     return months.map(m => {
+        const mData = MOCK_DB.filter(d => d.month === m && (selectedContact === 'Все' || d.contact === selectedContact) && (selectedOwner === 'Все' || d.owner === selectedOwner));
+        return { 
+          originalName: m, 
+          name: MONTH_NAMES[m] || m, // Используем реальное название для оси
+          revenue: mData.reduce((s, i) => s + i.revenue, 0), 
+          profit: mData.reduce((s, i) => s + i.profit, 0), 
+          fot: mData.reduce((s, i) => s + (i.expenses?.fot || 0), 0) 
+        };
+     });
+  }, [selectedContact, selectedOwner, uniqueMonths]);
+
+  const fmtMoney = (val) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val);
+  
+  // Короткое форматирование для меток на графиках
+  const fmtShort = (val) => {
+    if (val >= 1000000) return `${(val/1000000).toFixed(1)}M`;
+    if (val >= 1000) return `${(val/1000).toFixed(0)}k`;
+    return val;
+  };
+
+  const toggleContact = (name) => setExpandedContacts(prev => ({ ...prev, [name]: !prev[name] }));
+  const toggleOwner = (name) => setExpandedOwners(prev => ({ ...prev, [name]: !prev[name] }));
+  const toggleService = (svc) => setExpandedServices(prev => ({ ...prev, [svc]: !prev[svc] }));
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-800">
+      
+      {/* SIDEBAR */}
+      <aside className="w-80 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col h-screen fixed overflow-y-auto z-10">
+        <div className="p-6 border-b border-slate-100 bg-indigo-50/20">
+          <h1 className="text-xl font-black text-indigo-700 flex items-center gap-2">
+            <Target size={24} className="text-indigo-600" /> JETTY STATS
+          </h1>
+          <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-tighter">Корпоративная отчетность</p>
+        </div>
+
+        <div className="p-6 space-y-6 flex-1">
+          <div>
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+              <Calendar size={12} /> Период
+            </h3>
+            <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="w-full text-sm border-indigo-200 rounded-xl p-3 bg-indigo-50/30 border text-indigo-900 focus:ring-2 focus:ring-indigo-500 outline-none font-bold">
+              {uniqueMonths.map(c => <option key={`month-opt-${c}`} value={c}>{MONTH_NAMES[c] || c}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+              <Filter size={12} /> Фильтры
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-slate-600 mb-1 block">Контактное лицо</label>
+                <select value={selectedContact} onChange={e => setSelectedContact(e.target.value)} className="w-full text-sm border-slate-200 rounded-xl p-3 bg-white border focus:ring-2 focus:ring-indigo-500 outline-none">
+                  {uniqueContacts.map(c => <option key={`contact-opt-${c}`} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-600 mb-1 block">Юридическое лицо</label>
+                <select value={selectedOwner} onChange={e => setSelectedOwner(e.target.value)} className="w-full text-sm border-slate-200 rounded-xl p-3 bg-white border focus:ring-2 focus:ring-indigo-500 outline-none">
+                  {uniqueOwners.map(p => <option key={`owner-opt-${p}`} value={p}>{p}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 bg-indigo-900 text-[10px] text-indigo-200 text-center font-bold">JETTY ANALYTICS v4.0</div>
+      </aside>
+
+      <main className="ml-80 flex-1 flex flex-col h-screen overflow-hidden">
+        
+        {/* HEADER */}
+        <header className="bg-white border-b border-slate-200 px-8 py-3 flex items-center justify-between shadow-sm z-20">
+          <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl">
+            {[
+              { id: 'overview', label: 'Сводка', icon: LayoutDashboard },
+              { id: 'details', label: 'Реестр ТТ', icon: Table2 },
+              { id: 'capacity', label: 'Емкость рынка', icon: PieChart }
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${activeTab === tab.id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>
+                <tab.icon size={14} className="mr-2" /> {tab.label}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
+          
+          {/* TAB: OVERVIEW (ЛИСТ 1) */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card title="Выручка" value={fmtMoney(totalKPI.revenue)} icon={DollarSign} colorClass="bg-blue-600" />
+                <Card title="ФОТ" value={fmtMoney(totalKPI.fot)} subValue={`${totalKPI.revenue ? ((totalKPI.fot/totalKPI.revenue)*100).toFixed(1) : 0}% от оборота`} icon={Users} colorClass="bg-amber-500" />
+                <Card title="Прибыль" value={fmtMoney(totalKPI.profit)} subValue={`Маржа: ${totalKPI.revenue ? ((totalKPI.profit/totalKPI.revenue)*100).toFixed(1) : 0}%`} icon={TrendingUp} colorClass="bg-emerald-600" />
+              </div>
+              
+              {/* ОБНОВЛЕННЫЙ ГРАФИК */}
+              <div className="bg-white p-8 rounded-3xl shadow-md border border-slate-100 h-[450px]">
+                <div className="flex items-center justify-between mb-8">
+                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Динамика основных показателей</h3>
+                   <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div><span className="text-[10px] font-bold text-slate-500">ВЫРУЧКА</span></div>
+                      <div className="flex items-center gap-2"><div className="w-3 h-3 bg-amber-400 rounded-sm"></div><span className="text-[10px] font-bold text-slate-500">ФОТ</span></div>
+                   </div>
+                </div>
+                <ResponsiveContainer width="100%" height="85%">
+                  <BarChart data={chartHistoryData} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} 
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{fontSize: 10, fill: '#94a3b8'}} 
+                      tickFormatter={(v) => fmtShort(v)} 
+                    />
+                    <RechartsTooltip 
+                      cursor={{fill: '#f8fafc'}}
+                      contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                      formatter={(v) => fmtMoney(v)}
+                    />
+                    <Bar 
+                      dataKey="revenue" 
+                      name="Выручка" 
+                      fill="#3b82f6" 
+                      radius={[6, 6, 0, 0]} 
+                      barSize={40}
+                    >
+                      <LabelList 
+                        dataKey="revenue" 
+                        position="top" 
+                        formatter={(v) => fmtShort(v)} 
+                        style={{ fontSize: '10px', fontWeight: 'bold', fill: '#1e40af' }} 
+                      />
+                    </Bar>
+                    <Bar 
+                      dataKey="fot" 
+                      name="ФОТ" 
+                      fill="#fbbf24" 
+                      radius={[6, 6, 0, 0]} 
+                      barSize={40}
+                    >
+                      <LabelList 
+                        dataKey="fot" 
+                        position="top" 
+                        formatter={(v) => fmtShort(v)} 
+                        style={{ fontSize: '10px', fontWeight: 'bold', fill: '#92400e' }} 
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: DETAILS (РЕЕСТР ТТ) */}
+          {activeTab === 'details' && (
+             <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                   <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                      <h2 className="text-sm font-black uppercase text-slate-500 tracking-widest">Портфель объектов (Контакт → ЮЛ → ТТ)</h2>
+                      <div className="text-xs text-slate-400 font-bold uppercase">Общее кол-во ТТ: {totalTTCount}</div>
+                   </div>
+
+                   <div className="divide-y divide-slate-100">
+                      {Object.values(registryHierarchy).map((contact) => (
+                         <div key={`registry-c-${contact.name}`} className="group">
+                            <button onClick={() => toggleContact(contact.name)} className="w-full px-8 py-6 flex items-center justify-between hover:bg-slate-50 transition-colors bg-white border-b border-slate-50">
+                               <div className="flex items-center gap-4">
+                                  <div className={`p-3 rounded-xl transition-all shadow-sm ${expandedContacts[contact.name] ? 'bg-indigo-600 text-white scale-110' : 'bg-slate-100 text-slate-400'}`}>
+                                     <User size={22} />
+                                  </div>
+                                  <div className="text-left">
+                                     <span className="block text-base font-black text-slate-800 uppercase tracking-tight">{contact.name}</span>
+                                     <span className="block text-xs font-bold text-slate-400 uppercase tracking-tighter">Юридических лиц: {Object.keys(contact.owners).length}</span>
+                                  </div>
+                               </div>
+                               <div className="flex items-center gap-8">
+                                  <div className="text-right">
+                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Выручка по контакту</p>
+                                     <p className="text-lg font-black text-indigo-600 tabular-nums">{fmtMoney(contact.totalRev)}</p>
+                                  </div>
+                                  <ChevronDown size={24} className={`text-slate-300 transition-transform duration-300 ${expandedContacts[contact.name] ? 'rotate-180 text-indigo-600' : ''}`} />
+                               </div>
+                            </button>
+
+                            {expandedContacts[contact.name] && (
+                               <div className="bg-slate-50/30 divide-y divide-slate-100 animate-in slide-in-from-top-2">
+                                  {Object.values(contact.owners).map(owner => (
+                                     <div key={`owner-${contact.name}-${owner.name}`} className="pl-12">
+                                        <button onClick={() => toggleOwner(owner.name)} className="w-full px-8 py-5 flex items-center justify-between hover:bg-white transition-all border-l-4 border-transparent hover:border-indigo-400">
+                                           <div className="flex items-center gap-4">
+                                              <Building2 size={18} className={expandedOwners[owner.name] ? 'text-indigo-500' : 'text-slate-300'} />
+                                              <div className="text-left">
+                                                 <span className="text-sm font-black text-slate-700 uppercase">{owner.name}</span>
+                                                 <span className="block text-[10px] font-bold text-slate-400 uppercase mt-1">Точек: {Object.keys(owner.tts).length}</span>
+                                              </div>
+                                           </div>
+                                           <div className="flex items-center gap-6">
+                                              <span className="text-sm font-bold text-slate-500 tabular-nums">{fmtMoney(owner.totalRev)}</span>
+                                              <ChevronRight size={18} className={`text-slate-300 transition-transform ${expandedOwners[owner.name] ? 'rotate-90' : ''}`} />
+                                           </div>
+                                        </button>
+
+                                        {expandedOwners[owner.name] && (
+                                           <div className="p-6 grid grid-cols-1 gap-6 animate-in fade-in">
+                                              {Object.values(owner.tts).map(tt => (
+                                                 <div key={`tt-${tt.name}`} className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden flex flex-col hover:shadow-lg transition-shadow">
+                                                    <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                                       <div className="flex items-center gap-3">
+                                                          <MapPin size={16} className="text-indigo-500" />
+                                                          <span className="text-base font-black text-slate-800 uppercase tracking-tight">{tt.name}</span>
+                                                       </div>
+                                                       <div className="flex items-center gap-4">
+                                                          <span className="text-sm font-black text-indigo-700 bg-indigo-50 px-4 py-1.5 rounded-full shadow-sm">{fmtMoney(tt.rev)}</span>
+                                                       </div>
+                                                    </div>
+                                                    
+                                                    <div className="p-5 space-y-4 bg-white">
+                                                       {Object.values(tt.months).sort((a,b) => b.name.localeCompare(a.name)).map(m => {
+                                                          const sortedServices = SERVICES.map(svcName => {
+                                                            const activeSvc = m.svcs.find(s => s.service === svcName);
+                                                            return { name: svcName, isBought: !!activeSvc };
+                                                          }).sort((a, b) => b.isBought - a.isBought);
+
+                                                          return (
+                                                             <div key={`m-${m.name}`} className="flex flex-col sm:flex-row items-center gap-8 pb-6 border-b border-slate-50 last:border-0 last:pb-0">
+                                                                {selectedMonth === 'Все' && (
+                                                                   <div className="w-40 shrink-0 pt-1">
+                                                                      <span className="text-[11px] font-black bg-indigo-100 text-indigo-700 px-3 py-2 rounded-xl block text-center uppercase shadow-sm">
+                                                                         {MONTH_NAMES[m.name] || m.name}
+                                                                      </span>
+                                                                      <p className="text-lg font-black text-slate-900 mt-2 text-center tabular-nums leading-none">
+                                                                         {fmtMoney(m.rev)}
+                                                                      </p>
+                                                                   </div>
+                                                                )}
+                                                                <div className="flex-1 flex flex-wrap gap-2.5">
+                                                                   {sortedServices.map((svc, sIdx) => (
+                                                                      <div 
+                                                                         key={`svc-${sIdx}`}
+                                                                         className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex items-center gap-2 ${
+                                                                           svc.isBought 
+                                                                           ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm' 
+                                                                           : 'bg-rose-50/40 text-rose-300 border-rose-50 opacity-40'
+                                                                         }`}
+                                                                      >
+                                                                         {svc.isBought ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
+                                                                         {svc.name}
+                                                                      </div>
+                                                                   ))}
+                                                                </div>
+                                                             </div>
+                                                          );
+                                                       })}
+                                                    </div>
+                                                 </div>
+                                              ))}
+                                           </div>
+                                        )}
+                                     </div>
+                                  ))}
+                               </div>
+                            )}
+                         </div>
+                      ))}
+                   </div>
+                </div>
+             </div>
+          )}
+
+          {/* TAB: CAPACITY (ЕМКОСТЬ РЫНКА) */}
+          {activeTab === 'capacity' && (
+            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
+               <div className="flex items-center justify-between">
+                  <div className="bg-white p-1 rounded-xl border border-slate-200 flex shadow-sm">
+                    <button onClick={() => setCapacityViewMode('summary')} className={`flex items-center px-4 py-2 rounded-lg text-xs font-bold ${capacityViewMode === 'summary' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-indigo-600'}`}>
+                      <ListIcon size={14} className="mr-2" /> СВОДКА
+                    </button>
+                    <button onClick={() => setCapacityViewMode('detailed')} className={`flex items-center px-4 py-2 rounded-lg text-xs font-bold ${capacityViewMode === 'detailed' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-indigo-600'}`}>
+                      <LayoutGrid size={14} className="mr-2" /> ДЕТАЛЬНО
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest bg-white px-4 py-2 rounded-xl border border-slate-100 flex items-center gap-2">
+                    <Store size={14} className="text-indigo-500" /> Рынок: {totalTTCount} Торговых Точек
+                  </div>
+               </div>
+
+               {capacityViewMode === 'summary' && (
+                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-[10px] text-slate-400 font-black uppercase bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="px-6 py-4">Услуга / Месяц</th>
+                          <th className="px-6 py-4 text-center">ТТ (Факт)</th>
+                          <th className="px-6 py-4">Проникновение (%)</th>
+                          <th className="px-6 py-4 text-right">Выручка канала</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {capacityStats.map((svc) => (
+                          <React.Fragment key={`cap-svc-${svc.name}`}>
+                            <tr className="hover:bg-indigo-50/20 cursor-pointer" onClick={() => toggleService(svc.name)}>
+                              <td className="px-6 py-4 font-black text-slate-800 flex items-center gap-2">
+                                <ChevronRight size={14} className={`text-indigo-400 transition-transform ${expandedServices[svc.name] ? 'rotate-90' : ''}`} />
+                                {svc.name}
+                              </td>
+                              <td className="px-6 py-4 text-center text-slate-600 font-bold">{svc.avgFact} / {totalTTCount}</td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-indigo-500" style={{ width: `${svc.avgPenetration}%` }}></div>
+                                  </div>
+                                  <span className="text-xs font-black text-indigo-700 w-10">{svc.avgPenetration.toFixed(1)}%</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-right font-black text-slate-800">{fmtMoney(svc.totalRev)}</td>
+                            </tr>
+                            {expandedServices[svc.name] && svc.months.map(m => (
+                              <tr key={`cap-m-${svc.name}-${m.month}`} className="bg-slate-50/30 text-[11px]">
+                                <td className="px-6 py-3 pl-12 text-slate-500 font-bold uppercase">{MONTH_NAMES[m.month] || m.month}</td>
+                                <td className="px-6 py-3 text-center text-slate-500 font-medium">{m.factCount} / {totalTTCount}</td>
+                                <td className="px-6 py-3">
+                                  <div className="flex items-center gap-3 max-w-[140px]">
+                                    <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                      <div className="h-full bg-indigo-400" style={{ width: `${m.penetration}%` }}></div>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-indigo-600 w-8">{m.penetration.toFixed(1)}%</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-3 text-right font-bold text-slate-600">{fmtMoney(m.revenue)}</td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                 </div>
+               )}
+
+               {capacityViewMode === 'detailed' && (
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                   {capacityStats.map(svc => svc.months.map(m => (
+                     <div key={`card-${svc.name}-${m.month}`} className="bg-white rounded-3xl shadow-xl border border-slate-100 flex flex-col h-[520px] overflow-hidden border-t-8 border-t-indigo-600">
+                        <div className="p-6 border-b border-slate-100 bg-slate-50/20">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-black text-slate-800 text-base uppercase truncate pr-4">{svc.name}</h4>
+                            <span className="text-[10px] bg-white px-3 py-1 rounded-full shadow-sm text-indigo-700 font-black border border-indigo-100">{MONTH_NAMES[m.month] || m.month}</span>
+                          </div>
+                          <div className="flex items-end justify-between mt-3">
+                            <div className="text-[11px] text-slate-500 font-bold uppercase">Охват: <span className="text-indigo-600 font-black">{m.factCount}/{m.totalCount} ({m.penetration.toFixed(1)}%)</span></div>
+                            <div className="text-right text-lg font-black text-indigo-950 leading-none">{fmtMoney(m.revenue)}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-row overflow-hidden border-t border-slate-50">
+                           <div className="flex-[1.8] flex flex-col min-w-0 border-r border-slate-100 bg-emerald-50/5">
+                              <div className="px-5 py-2.5 bg-emerald-100/50 text-emerald-900 text-[10px] font-black uppercase flex justify-between border-b border-emerald-100 shadow-sm">
+                                <span>Активные ТТ ({m.factCount})</span>
+                                <span className="text-emerald-700">ARPU: {fmtMoney(m.arpu)}</span>
+                              </div>
+                              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 custom-scrollbar-emerald">
+                                 {m.active.map((user, uIdx) => (
+                                   <div key={`buy-${uIdx}`} className="flex justify-between items-center p-3.5 bg-white rounded-xl border border-emerald-100 hover:border-emerald-400 transition-all shadow-sm hover:shadow-md group">
+                                      <span className="text-[15px] font-black text-slate-950 leading-tight flex-1 pr-3 truncate">{user.name}</span>
+                                      <span className="text-[15px] font-black text-emerald-800 tabular-nums bg-emerald-50/50 px-2 py-1 rounded-lg">{fmtMoney(user.sum)}</span>
+                                   </div>
+                                 ))}
+                                 {m.active.length === 0 && <p className="text-[11px] text-slate-400 text-center py-10 font-bold uppercase italic opacity-50 tracking-widest">Нет активных ТТ</p>}
+                              </div>
+                           </div>
+
+                           <div className="flex-1 flex flex-col min-w-0 bg-slate-50/30">
+                              <div className="px-5 py-2.5 bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase border-b border-slate-200">
+                                <span>Потенциал ({m.potentialCount})</span>
+                              </div>
+                              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 custom-scrollbar-rose">
+                                 {m.inactive.map((user, uIdx) => (
+                                   <div key={`pot-${uIdx}`} className="p-3 bg-white/70 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors shadow-sm">
+                                      <span className="text-[11px] font-bold text-slate-400 leading-tight block truncate group-hover:text-slate-600">{user.name}</span>
+                                   </div>
+                                 ))}
+                                 {m.inactive.length === 0 && (
+                                   <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                                      <CheckCircle2 size={32} className="text-emerald-500 mb-2" />
+                                      <p className="text-[10px] font-black text-emerald-700 uppercase leading-tight">Весь рынок<br/>охвачен!</p>
+                                   </div>
+                                 )}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                   )))}
+                 </div>
+               )}
+            </div>
+          )}
+        </div>
+      </main>
+      
+      <style>{`
+        .custom-scrollbar-emerald::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar-emerald::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-emerald::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; border: 1px solid white; }
+        
+        .custom-scrollbar-rose::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar-rose::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-rose::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 1px solid white; }
+      `}</style>
+    </div>
+  );
+}
