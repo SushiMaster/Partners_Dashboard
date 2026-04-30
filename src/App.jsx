@@ -581,7 +581,7 @@ export default function App() {
   const uniqueContacts = useMemo(() => ['Все', ...new Set(PARTNER_DATA_RAW.map(d => d.contact).sort())], []);
   const uniqueOwners = useMemo(() => ['Все', ...new Set(PARTNER_DATA_RAW.map(d => d.owner).sort())], []);
   const uniqueMonths = useMemo(() => ['Все', ...new Set(MOCK_DB.map(d => d.month).sort())], []);
-  
+
   const uniqueCities = useMemo(() => {
     const cities = new Set();
     PARTNER_DATA_RAW.forEach(p => {
@@ -608,10 +608,10 @@ export default function App() {
   const registryHierarchy = useMemo(() => {
     const hierarchy = {};
     const contactsPool = selectedContact === 'Все' ? uniqueContacts.filter(c => c !== 'Все') : [selectedContact];
-    
+
     contactsPool.forEach(contactName => {
       const partnersForContact = PARTNER_DATA_RAW.filter(p => p.contact === contactName);
-      
+
       // Filter partners by city and owner if selected
       const filteredPartners = partnersForContact.filter(p => {
         const partnerCity = p.tt.includes('-') ? p.tt.split('-')[0] : p.tt;
@@ -622,7 +622,7 @@ export default function App() {
 
       if (filteredPartners.length > 0) {
         hierarchy[contactName] = { name: contactName, owners: {}, totalRev: 0 };
-        
+
         filteredPartners.forEach(pData => {
            const o = pData.owner;
            const ttMatch = filteredData.filter(fd => fd.tt === pData.tt);
@@ -654,7 +654,7 @@ export default function App() {
   const capacityStats = useMemo(() => {
     const stats = {};
     const monthsInScope = selectedMonth === 'Все' ? uniqueMonths.filter(m => m !== 'Все') : [selectedMonth];
-    
+
     // Filter the base TT list by selected city and owner
     const scopeTTList = uniqueTTList.filter(p => {
        const city = p.tt.includes('-') ? p.tt.split('-')[0] : p.tt;
@@ -662,8 +662,8 @@ export default function App() {
        const matchOwner = selectedOwner === 'Все' || p.owner === selectedOwner;
        return matchCity && matchOwner;
     });
-    const scopeTTCount = scopeTTList.length;
 
+    const scopeTTCount = scopeTTList.length;
     SERVICES.forEach(svc => {
       stats[svc] = {
         name: svc,
@@ -675,7 +675,7 @@ export default function App() {
           })).sort((a,b) => b.sum - a.sum);
           const inactiveTTs = scopeTTList.filter(p => !buyersTTSet.has(p.tt)).map(p => ({ name: `${p.tt} (${p.owner})` }));
           const rev = filteredData.filter(d => d.month === month && d.service === svc).reduce((s, i) => s + i.revenue, 0);
-          
+
           return {
             month, factCount: activeTTs.length, totalCount: scopeTTCount, revenue: rev,
             arpu: activeTTs.length > 0 ? rev / activeTTs.length : 0,
@@ -684,11 +684,13 @@ export default function App() {
           };
         })
       };
+
       const mStats = stats[svc].months;
       stats[svc].totalRev = mStats.reduce((s, m) => s + m.revenue, 0);
       stats[svc].avgPenetration = mStats.reduce((s, m) => s + m.penetration, 0) / (mStats.length || 1);
       stats[svc].avgFact = Math.round(mStats.reduce((s, m) => s + m.factCount, 0) / (mStats.length || 1));
     });
+
     return Object.values(stats).sort((a,b) => b.totalRev - a.totalRev);
   }, [selectedMonth, uniqueMonths, uniqueTTList, filteredData, selectedCity, selectedOwner]);
 
@@ -698,49 +700,22 @@ export default function App() {
          revenue: acc.revenue + item.revenue, profit: acc.profit + item.profit, fot: acc.fot + (item.expenses?.fot || 0)
        }), { revenue: 0, profit: 0, fot: 0 });
     }
-    
+
     // Default aggregate for "All"
     let revenue = 0; let fot = 0;
     Object.keys(TARGET_REVENUE).forEach(m => { revenue += TARGET_REVENUE[m]; fot += TARGET_FOT[m]; });
     return { revenue, fot, profit: revenue - fot };
   }, [selectedMonth, selectedContact, selectedOwner, selectedCity, filteredData]);
 
-const chartHistoryData = useMemo(() => {
-    // 1. Берем список месяцев (либо все, либо только один выбранный)
-    const months = selectedMonth === 'Все' 
-      ? uniqueMonths.filter(m => m !== 'Все').sort() 
-      : [selectedMonth];
-    
-    return months.map(m => {
-      // 2. Всегда берем данные из filteredData, так как они уже учитывают ВСЕ фильтры
-      // (город, контакт, юрлицо и месяц)
-      const mData = filteredData.filter(d => d.month === m);
-      
-      const revenue = mData.reduce((s, i) => s + (i.revenue || 0), 0);
-      const fot = mData.reduce((s, i) => s + (i.expenses?.fot || 0), 0);
-
-      // 3. Если данных по фильтрам нет совсем (0), и фильтры не выбраны, 
-      // тогда (и только тогда) показываем план из TARGET
-      if (revenue === 0 && selectedContact === 'Все' && selectedOwner === 'Все' && selectedCity === 'Все') {
-        return {
-          originalName: m,
-          name: MONTH_NAMES[m] || m,
-          revenue: TARGET_REVENUE[m] || 0,
-          fot: TARGET_FOT[m] || 0,
-          profit: (TARGET_REVENUE[m] || 0) - (TARGET_FOT[m] || 0)
-        };
-      }
-
-      return {
-        originalName: m,
-        name: MONTH_NAMES[m] || m,
-        revenue: revenue,
-        fot: fot,
-        profit: revenue - fot
-      };
-    });
-    // Добавляем зависимости, чтобы React следил за изменениями
-  }, [filteredData, selectedMonth, selectedContact, selectedOwner, selectedCity, uniqueMonths]);
+  const chartHistoryData = useMemo(() => {
+     const months = uniqueMonths.filter(m => m !== 'Все').sort();
+     return months.map(m => {
+        if (selectedContact === 'Все' && selectedOwner === 'Все' && selectedCity === 'Все') {
+          return {
+            originalName: m, name: MONTH_NAMES[m] || m,
+            revenue: TARGET_REVENUE[m], fot: TARGET_FOT[m], profit: TARGET_REVENUE[m] - TARGET_FOT[m]
+          };
+        }
         const mData = MOCK_DB.filter(d => {
            const itemCity = d.tt.includes('-') ? d.tt.split('-')[0] : d.tt;
            return d.month === m && 
