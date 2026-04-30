@@ -741,8 +741,6 @@ const chartHistoryData = useMemo(() => {
     });
     // Добавляем зависимости, чтобы React следил за изменениями
   }, [filteredData, selectedMonth, selectedContact, selectedOwner, selectedCity, uniqueMonths]);
-          };
-        }
         const mData = MOCK_DB.filter(d => {
            const itemCity = d.tt.includes('-') ? d.tt.split('-')[0] : d.tt;
            return d.month === m && 
