@@ -63,15 +63,17 @@ const TARGET_FOT = {
 const PARTNER_DATA_RAW = [
   { contact: "Блинов Роман", partner: "Блинов Роман", owner: "ИП Блинов Р.В.", tt: "Киров-01" },
   { contact: "Валеева Юлия", partner: "Валеева Юлия", owner: "ИП Муслимова И.Р.", tt: "Лянтор-01" },
+  { contact: "Валеева Юлия", partner: "Валеева Юлия", owner: "ИП Валеева Ю.И.", tt: "Федоровский-01" },
   { contact: "Владислав Акцепт-Трейд", partner: "Стивен", owner: "ООО Акцепт-Трейд", tt: "Москва-01" },
   { contact: "Владислав Акцепт-Трейд", partner: "Стивен", owner: "ООО Акцепт-Трейд", tt: "Реутов-01" },
   { contact: "Габбасов Максим", partner: "Адаева Анастасия", owner: "ИП Церпицкая Е.С.", tt: "Москва-11" },
   { contact: "Габбасов Максим", partner: "Адаева Анастасия", owner: "ИП Церпицкая Е.С.", tt: "Москва-14" },
   { contact: "Габбасов Максим", partner: "Адаева Анастасия", owner: "ИП Церпицкая Е.С.", tt: "Москва-15" },
   { contact: "Габбасов Максим", partner: "Акобиров Амирхон", owner: "ИП Акобиров А.Н.", tt: "Заокский-01" },
-  { contact: "Максим Габбасов", partner: "Акобиров Амирхон", owner: "ИП Давлатова Н.Ш.", tt: "Серпухов-01" },
+  { contact: "ГабБасов Максим", partner: "Акобиров Амирхон", owner: "ИП Давлатова Н.Ш.", tt: "Серпухов-01" },
   { contact: "Габбасов Максим", partner: "Бычков Вячеслав", owner: "ИП Штылов Л.И.", tt: "Калининград-03" },
   { contact: "Габбасов Максим", partner: "Бычков Вячеслав", owner: "ООО «УРАЛ СК СТРОЙ-ИНВЕСТ»", tt: "Калининград-01" },
+  { contact: "Габбасов Максим", partner: "Бычков Вячеслав", owner: "ООО «УРАЛ СК СТРОЙ-ИНВЕСТ»", tt: "Калининград-02" },
   { contact: "Габбасов Максим", partner: "Галянин Максим", owner: "ИП Салова Ю.В.", tt: "Москва-13" },
   { contact: "Габбасов Максим", partner: "Кельт Игорь", owner: "ИП Кельт Н.С.", tt: "Рыбинск-01" },
   { contact: "Габбасов Максим", partner: "Кельт Игорь", owner: "ИП Пушкарева В.М.", tt: "Рыбинск-02" },
@@ -79,8 +81,8 @@ const PARTNER_DATA_RAW = [
   { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Витязево-01" },
   { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Воскресенск-01" },
   { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Геленджик-01" },
-  { contact: "Максим Габбасов", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Дубна-01" },
-  { contact: "Максим Габбасов", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Егорьевск-01" },
+  { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Дубна-01" },
+  { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Егорьевск-01" },
   { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Жуковский-01" },
   { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Качканар-01" },
   { contact: "Габбасов Максим", partner: "Мельникова Татьяна", owner: "ИП Шабалина Е.П.", tt: "Коломна-01" },
@@ -96,24 +98,25 @@ const PARTNER_DATA_RAW = [
   { contact: "Глумова Ольга", partner: "Востриков Александр", owner: "ИП Глушков А.В.", tt: "Подольск-02" },
   { contact: "Глумова Ольга", partner: "Востриков Александр", owner: "ИП Гурш К.О.", tt: "Балашиха-01" },
   { contact: "Глумова Ольга", partner: "Востриков Александр", owner: "ИП Рудакова Е.В.", tt: "Красногорск-01" },
+  { contact: "Глумова Ольга", partner: "Востриков Александр", owner: "ИП Глушков А.В.", tt: "Видное-01" },
   { contact: "Дудкин Александр", partner: "Дудкин Александр", owner: "ИП Дудкин А.В.", tt: "Мытищи-01" },
   { contact: "Дудкин Александр", partner: "Дудкин Александр", owner: "ИП Полякова Д.А.", tt: "Королев-01" },
   { contact: "Евдокимова Ирина", partner: "Евдокимова Ирина", owner: "ИП Евдокимова И.М.", tt: "Санкт-Петербург-04" },
-  { contact: "Виктория Ефимова", partner: "Великотский Максим", owner: "ИП Великотский М.Н.", tt: "Реутов-02" },
-  { contact: "Виктория Ефимова", partner: "Великотский Максим", owner: "ИП Мирошникова А.А.", tt: "Москва-09" },
+  { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ИП Великотский М.Н.", tt: "Реутов-02" },
+  { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ИП Мирошникова А.А.", tt: "Москва-09" },
   { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ИП Свинухов Р.А.", tt: "Москва-04" },
   { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ИП Чеков И.Ю.", tt: "Чехов-01" },
-  { contact: "Виктория Ефимова", partner: "Великотский Максим", owner: "ООО «ГЕФЕСТ»", tt: "Москва-07" },
+  { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ООО «ГЕФЕСТ»", tt: "Москва-07" },
   { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ΟΟΟ «ΓΕΦЕСТ»", tt: "Москва-10" },
   { contact: "Ефимова Виктория", partner: "Великотский Максим", owner: "ООО «ГЕФЕСТ»", tt: "Москва-18" },
-  { contact: "Виктория Ефимова", partner: "Сатыбалдиев Сулайман", owner: "ИП Сатыбалдиев С.", tt: "Смоленск-01" },
-  { contact: "Виктория Ефимова", partner: "Старкова Юлия", owner: "ИП Башкатова О.В.", tt: "Воронеж-04" },
-  { contact: "Виктория Ефимова", partner: "Старкова Юлия", owner: "ИП Башкатова О.В.", tt: "Воронеж-07" },
-  { contact: "Виктория Ефимова", partner: "Старкова Юлия", owner: "ИП Башкатова С.В.", tt: "Воронеж-03" },
+  { contact: "Ефимова Виктория", partner: "Сатыбалдиев Сулайман", owner: "ИП Сатыбалдиев С.", tt: "Смоленск-01" },
+  { contact: "Ефимова Виктория", partner: "Старкова Юлия", owner: "ИП Башкатова О.В.", tt: "Воронеж-04" },
+  { contact: "Ефимова Виктория", partner: "Старкова Юлия", owner: "ИП Башкатова О.В.", tt: "Воронеж-07" },
+  { contact: "Ефимова Виктория", partner: "Старкова Юлия", owner: "ИП Башкатова С.В.", tt: "Воронеж-03" },
   { contact: "Ефимова Виктория", partner: "Тарасовский Андрей", owner: "ИП Выговская Е.А.", tt: "Курск-02" },
-  { contact: "Виктория Ефимова", partner: "Тарасовский Андрей", owner: "ИП Выговская Е.А.", tt: "Курск-03" },
-  { contact: "Виктория Ефимова", partner: "Тарасовский Андрей", owner: "ИП Тарасовская В.О.", tt: "Белгород-02" },
-  { contact: "Виктория Ефимова", partner: "Тарасовский Андрей", owner: "ИП Тарасовский В.В.", tt: "Белгород-01" },
+  { contact: "Ефимова Виктория", partner: "Тарасовский Андрей", owner: "ИП Выговская Е.А.", tt: "Курск-03" },
+  { contact: "Ефимова Виктория", partner: "Тарасовский Андрей", owner: "ИП Тарасовская В.О.", tt: "Белгород-02" },
+  { contact: "Ефимова Виктория", partner: "Тарасовский Андрей", owner: "ИП Тарасовский В.В.", tt: "Белгород-01" },
   { contact: "Илюхин Николай", partner: "Илюхин Николай", owner: "ИП Илюхин Н.М.", tt: "Тарко-Сале-01" },
   { contact: "Князева Лариса", partner: "Бойко Руслан", owner: "ИП Бочкова Е.А.", tt: "Островцы-01" },
   { contact: "Котосова Ольга", partner: "Ворошилов Иван", owner: "ИП Ворошилов И.В.", tt: "Кстово-01" },
@@ -702,13 +705,42 @@ export default function App() {
     return { revenue, fot, profit: revenue - fot };
   }, [selectedMonth, selectedContact, selectedOwner, selectedCity, filteredData]);
 
-  const chartHistoryData = useMemo(() => {
-     const months = uniqueMonths.filter(m => m !== 'Все').sort();
-     return months.map(m => {
-        if (selectedContact === 'Все' && selectedOwner === 'Все' && selectedCity === 'Все') {
-          return {
-            originalName: m, name: MONTH_NAMES[m] || m,
-            revenue: TARGET_REVENUE[m], fot: TARGET_FOT[m], profit: TARGET_REVENUE[m] - TARGET_FOT[m]
+const chartHistoryData = useMemo(() => {
+    // 1. Берем список месяцев (либо все, либо только один выбранный)
+    const months = selectedMonth === 'Все' 
+      ? uniqueMonths.filter(m => m !== 'Все').sort() 
+      : [selectedMonth];
+    
+    return months.map(m => {
+      // 2. Всегда берем данные из filteredData, так как они уже учитывают ВСЕ фильтры
+      // (город, контакт, юрлицо и месяц)
+      const mData = filteredData.filter(d => d.month === m);
+      
+      const revenue = mData.reduce((s, i) => s + (i.revenue || 0), 0);
+      const fot = mData.reduce((s, i) => s + (i.expenses?.fot || 0), 0);
+
+      // 3. Если данных по фильтрам нет совсем (0), и фильтры не выбраны, 
+      // тогда (и только тогда) показываем план из TARGET
+      if (revenue === 0 && selectedContact === 'Все' && selectedOwner === 'Все' && selectedCity === 'Все') {
+        return {
+          originalName: m,
+          name: MONTH_NAMES[m] || m,
+          revenue: TARGET_REVENUE[m] || 0,
+          fot: TARGET_FOT[m] || 0,
+          profit: (TARGET_REVENUE[m] || 0) - (TARGET_FOT[m] || 0)
+        };
+      }
+
+      return {
+        originalName: m,
+        name: MONTH_NAMES[m] || m,
+        revenue: revenue,
+        fot: fot,
+        profit: revenue - fot
+      };
+    });
+    // Добавляем зависимости, чтобы React следил за изменениями
+  }, [filteredData, selectedMonth, selectedContact, selectedOwner, selectedCity, uniqueMonths]);
           };
         }
         const mData = MOCK_DB.filter(d => {
