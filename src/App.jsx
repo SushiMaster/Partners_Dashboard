@@ -584,7 +584,7 @@ const HARD_SALES_DATA = {
 };
 const generateDataFromReport = () => {
   const data = [];
-  const months = ['2025-10', '2025-11', '2025-12', '2026-01','2026-02','2026-03'];
+  const months = ['2025-10', '2025-11', '2025-12', '2026-01','2026-02','2026-03','2026-04'];
 
   months.forEach(month => {
     const reportForMonth = HARD_SALES_DATA[month] || {};
